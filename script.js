@@ -38,98 +38,6 @@ document.getElementById('feedback-form').addEventListener('submit', function(e) 
     this.reset();
 });
 
-// Функционал загрузки фото
-const fileInput = document.getElementById('file-input');
-const selectBtn = document.getElementById('select-btn');
-const uploadArea = document.getElementById('upload-area');
-const previewContainer = document.getElementById('preview-container');
-
-// Открыть диалог выбора файлов при клике на кнопку или область загрузки
-selectBtn.addEventListener('click', () => fileInput.click());
-uploadArea.addEventListener('click', () => fileInput.click());
-
-// Предотвратить открытие диалога при клике внутри области загрузки
-uploadArea.addEventListener('click', (e) => e.stopPropagation());
-
-// Обработка выбора файлов
-fileInput.addEventListener('change', function() {
-    handleFiles(this.files);
-});
-
-// Поддержка drag and drop
-uploadArea.addEventListener('dragover', function(e) {
-    e.preventDefault();
-    this.style.backgroundColor = '#e8f4fc';
-    this.style.borderColor = '#2980b9';
-});
-
-uploadArea.addEventListener('dragleave', function() {
-    this.style.backgroundColor = '';
-    this.style.borderColor = '#3498db';
-});
-
-uploadArea.addEventListener('drop', function(e) {
-    e.preventDefault();
-    this.style.backgroundColor = '';
-    this.style.borderColor = '#3498db';
-    
-    if (e.dataTransfer.files.length) {
-        handleFiles(e.dataTransfer.files);
-    }
-});
-
-// Обработка загруженных файлов
-function handleFiles(files) {
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        
-        // Проверка типа файла
-        if (!file.type.match('image.*')) {
-            alert('Пожалуйста, загружайте только изображения (JPG, PNG, GIF)');
-            continue;
-        }
-        
-        // Проверка размера файла (максимум 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-            alert(`Файл "${file.name}" слишком большой. Максимальный размер: 5MB`);
-            continue;
-        }
-        
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-            // Создание элемента превью
-            const previewItem = document.createElement('div');
-            previewItem.className = 'preview-item';
-            
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.alt = 'Загруженное фото';
-            
-            const removeBtn = document.createElement('button');
-            removeBtn.className = 'remove-btn';
-            removeBtn.innerHTML = '×';
-            removeBtn.title = 'Удалить фото';
-            removeBtn.onclick = function() {
-                previewContainer.removeChild(previewItem);
-            };
-            
-            previewItem.appendChild(img);
-            previewItem.appendChild(removeBtn);
-            previewContainer.appendChild(previewItem);
-        };
-        
-        reader.onerror = function() {
-            alert(`Ошибка при чтении файла: ${file.name}`);
-        };
-        
-        reader.readAsDataURL(file);
-    }
-    
-    // Сброс input для возможности повторной загрузки тех же файлов
-    fileInput.value = '';
-}
-
 // Плавная прокрутка для всех внутренних ссылок
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
@@ -152,4 +60,27 @@ window.addEventListener('scroll', function() {
     } else {
         header.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
     }
+});
+
+// Анимация появления элементов при скролле
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver(function(entries) {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+        }
+    });
+}, observerOptions);
+
+// Наблюдаем за секциями
+document.querySelectorAll('section').forEach(section => {
+    section.style.opacity = '0';
+    section.style.transform = 'translateY(20px)';
+    section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(section);
 });
